@@ -1,0 +1,114 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Write Letter{% endblock %}
+{% block page_title %}Write Letter{% endblock %}
+{% block page_sub %}Submit a new letter for admin review{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Form -->
+  <div class="col-lg-8">
+    <div class="form-card">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-8">
+            <label class="form-label">Letter Title <span style="color:var(--brand)">*</span></label>
+            {{ form.title }}
+            {% if form.title.errors %}<div class="field-error">{{ form.title.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Category <span style="color:var(--brand)">*</span></label>
+            {{ form.category }}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Recipient Name <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+            {{ form.recipient_name }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Recipient Organization <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+            {{ form.recipient_organization }}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">
+            Letter Body <span style="color:var(--brand)">*</span>
+            <span id="wc" style="font-weight:500;color:var(--muted);font-size:11px;margin-left:6px">(0 words)</span>
+          </label>
+          {{ form.body }}
+          {% if form.body.errors %}<div class="field-error">{{ form.body.errors.0 }}</div>{% endif %}
+          <!-- Word count progress bar -->
+          <div style="margin-top:8px">
+            <div style="background:#f0f1f5;border-radius:4px;height:4px;overflow:hidden">
+              <div id="wc-bar" style="height:100%;border-radius:4px;background:var(--brand);width:0%;transition:width .3s,background .3s"></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">50 words minimum · 150+ words recommended for best approval chances</div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <button type="submit" class="btn-primary-brand">
+            <i class="bi bi-send-fill"></i> Submit Letter
+          </button>
+          <a href="{% url 'letters:list' %}" style="font-size:13px;color:var(--muted);text-decoration:none;font-weight:500">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sidebar tips -->
+  <div class="col-lg-4">
+    <div class="panel mb-3">
+      <div class="panel-head">
+        <h6><i class="bi bi-lightbulb-fill me-2" style="color:#f59e0b"></i>Tips for Approval</h6>
+      </div>
+      <div style="padding:16px 20px">
+        <ul style="font-size:13px;color:var(--muted);padding-left:18px;line-height:2;margin:0">
+          <li>Write at least <strong style="color:var(--text)">150 words</strong></li>
+          <li>Use clear, professional language</li>
+          <li>Address a specific recipient or situation</li>
+          <li>Proofread before submitting</li>
+          <li>Select the most accurate category</li>
+          <li>Strong opening and closing lines</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel" style="border-top:3px solid var(--green)">
+      <div style="padding:20px">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+          Earn per approved letter
+        </div>
+        <div style="font-size:36px;font-weight:800;color:var(--green);line-height:1">$25.00</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6">
+          Credited to your balance after admin approval. Withdraw anytime via bank transfer.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const body = document.getElementById('id_body');
+const wc   = document.getElementById('wc');
+const bar  = document.getElementById('wc-bar');
+function count() {
+  const n = body.value.trim() ? body.value.trim().split(/\s+/).length : 0;
+  wc.textContent = `(${n} words)`;
+  const pct = Math.min((n / 150) * 100, 100);
+  bar.style.width = pct + '%';
+  bar.style.background = n < 50 ? '#c8102e' : n < 150 ? '#d97706' : '#16a34a';
+  wc.style.color = n < 50 ? '#c8102e' : n < 150 ? '#d97706' : '#16a34a';
+}
+body.addEventListener('input', count);
+count();
+</script>
+{% endblock %}

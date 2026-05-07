@@ -1,0 +1,193 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+{% block title %}Deposit{% endblock %}
+{% block page_title %}Deposit Funds{% endblock %}
+{% block page_sub %}Add funds to your account via cryptocurrency{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-7">
+
+    <!-- Crypto Section -->
+    <div class="form-card mb-4">
+      <h6 style="font-size:14px;font-weight:600;margin-bottom:4px">
+        <i class="bi bi-currency-bitcoin text-brand me-2"></i>Cryptocurrency Deposit
+      </h6>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:20px">Choose your preferred cryptocurrency, send to the wallet address below, then submit the transaction hash.</p>
+
+      <!-- Coin selector -->
+      <div class="row g-2 mb-4" id="crypto-selector">
+        <div class="col-4">
+          <div class="crypto-option selected" data-coin="BTC" onclick="selectCoin('BTC', this)">
+            <div class="crypto-icon">₿</div>
+            <div class="crypto-name">Bitcoin</div>
+            <div class="crypto-sub">BTC</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="crypto-option" data-coin="USDT" onclick="selectCoin('USDT', this)">
+            <div class="crypto-icon">₮</div>
+            <div class="crypto-name">Tether</div>
+            <div class="crypto-sub">USDT TRC-20</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="crypto-option" data-coin="ETH" onclick="selectCoin('ETH', this)">
+            <div class="crypto-icon">Ξ</div>
+            <div class="crypto-name">Ethereum</div>
+            <div class="crypto-sub">ETH</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wallet addresses (shown dynamically) -->
+      {% for coin, address in wallets.items %}
+      <div class="wallet-address-box mb-3" id="wallet-{{ coin }}" style="{% if coin != 'BTC' %}display:none{% endif %}">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">
+          Send {{ coin }} to this address:
+        </div>
+        <div class="wallet-box">
+          <span id="addr-{{ coin }}">{{ address }}</span>
+          <button onclick="copyAddress('addr-{{ coin }}')" style="border:none;background:none;color:var(--brand);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">
+            <i class="bi bi-clipboard me-1"></i>Copy
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">
+          ⚠️ Only send {{ coin }} to this address. Sending other coins will result in permanent loss.
+        </div>
+      </div>
+      {% endfor %}
+
+      <hr style="border-color:var(--border);margin:20px 0">
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="method" id="hidden-method" value="BTC">
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Cryptocurrency <span style="color:var(--brand)">*</span></label>
+            <div class="form-control" style="background:#f9f9fb;color:var(--text);font-weight:600" id="coin-display">Bitcoin (BTC)</div>
+            {{ form.method }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Amount (USD) <span style="color:var(--brand)">*</span></label>
+            {{ form.amount_usd }}
+            {% if form.amount_usd.errors %}
+              <div style="font-size:12px;color:var(--brand);margin-top:4px">{{ form.amount_usd.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="form-label">Transaction Hash / ID <span style="color:var(--brand)">*</span></label>
+          {{ form.tx_hash }}
+          {% if form.tx_hash.errors %}
+            <div style="font-size:12px;color:var(--brand);margin-top:4px">{{ form.tx_hash.errors.0 }}</div>
+          {% endif %}
+          <div style="font-size:11px;color:var(--muted);margin-top:5px">
+            After sending, paste your transaction hash here. We'll verify it within 1–24 hours.
+          </div>
+        </div>
+
+        <button type="submit" class="btn-brand mt-4">
+          <i class="bi bi-check-circle me-2"></i>Submit Deposit Request
+        </button>
+      </form>
+    </div>
+
+    <!-- Coming soon: Banking & Cards -->
+    <div class="row g-3">
+      <div class="col-6">
+        <div class="coming-soon-card">
+          <i class="bi bi-bank" style="font-size:24px;color:var(--muted);display:block;margin-bottom:8px"></i>
+          <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px">Bank Transfer</div>
+          <span class="badge-cs">Coming Soon</span>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="coming-soon-card">
+          <i class="bi bi-credit-card" style="font-size:24px;color:var(--muted);display:block;margin-bottom:8px"></i>
+          <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px">Credit / Debit Card</div>
+          <span class="badge-cs">Coming Soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-md-5">
+    <div class="dash-card mb-3">
+      <div class="dash-card-title">How It Works</div>
+      <div style="font-size:13px;color:var(--muted)">
+        <div class="d-flex gap-3 mb-3">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+          <div>Select your cryptocurrency and copy the wallet address above.</div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+          <div>Send your desired amount from your crypto wallet to our address.</div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+          <div>Copy the transaction hash and paste it in the form, then submit.</div>
+        </div>
+        <div class="d-flex gap-3">
+          <div style="width:24px;height:24px;border-radius:50%;background:#1a9e75;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+          <div>We verify and credit your balance within <strong style="color:var(--text)">1–24 hours</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent deposits -->
+    {% if recent_deposits %}
+    <div class="dash-card">
+      <div class="dash-card-title">Recent Deposits</div>
+      {% for dep in recent_deposits %}
+        <div class="d-flex align-items-center justify-content-between py-2" style="border-bottom:1px solid #f3f4f6;font-size:13px">
+          <div>
+            <div style="font-weight:500">{{ dep.method }} – ${{ dep.amount_usd|floatformat:2 }}</div>
+            <div style="font-size:11px;color:var(--muted)">{{ dep.created_at|date:"M j, Y" }}</div>
+          </div>
+          <span class="pill pill-{{ dep.status }}">{{ dep.get_status_display }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const wallets = {
+  BTC: { name: 'Bitcoin (BTC)', addr: document.getElementById('addr-BTC')?.textContent },
+  USDT: { name: 'Tether USDT (TRC-20)', addr: document.getElementById('addr-USDT')?.textContent },
+  ETH: { name: 'Ethereum (ETH)', addr: document.getElementById('addr-ETH')?.textContent },
+};
+
+document.getElementById('id_method').style.display = 'none';
+
+function selectCoin(coin, el) {
+  document.querySelectorAll('.crypto-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('hidden-method').value = coin;
+  document.getElementById('id_method').value = coin;
+  document.getElementById('coin-display').textContent = wallets[coin]?.name || coin;
+  document.querySelectorAll('.wallet-address-box').forEach(b => b.style.display = 'none');
+  const box = document.getElementById('wallet-' + coin);
+  if (box) box.style.display = 'block';
+}
+
+function copyAddress(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    const btn = el.nextElementSibling;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Copied!';
+    setTimeout(() => btn.innerHTML = orig, 2000);
+  });
+}
+</script>
+{% endblock %}

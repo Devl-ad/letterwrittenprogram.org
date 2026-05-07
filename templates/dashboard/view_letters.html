@@ -1,0 +1,110 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+{% block title %}My Letters{% endblock %}
+{% block page_title %}My Letters{% endblock %}
+{% block page_sub %}Track and manage all your submitted letters{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div class="filter-tabs">
+    <a href="?status=all" class="filter-tab {% if status_filter == 'all' %}active{% endif %}">
+      All <span style="opacity:0.7">({{ counts.all }})</span>
+    </a>
+    <a href="?status=pending" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">
+      Pending <span style="opacity:0.7">({{ counts.pending }})</span>
+    </a>
+    <a href="?status=approved" class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">
+      Approved <span style="opacity:0.7">({{ counts.approved }})</span>
+    </a>
+    <a href="?status=declined" class="filter-tab {% if status_filter == 'declined' %}active{% endif %}">
+      Declined <span style="opacity:0.7">({{ counts.declined }})</span>
+    </a>
+  </div>
+  <a href="{% url 'letters:write' %}" class="btn-brand" style="text-decoration:none;font-size:13px">
+    <i class="bi bi-plus-lg me-1"></i> New Letter
+  </a>
+</div>
+
+<div class="dash-card">
+  {% if letters %}
+    <table class="letter-table w-100">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Words</th>
+          <th>Status</th>
+          <th>Earnings</th>
+          <th>Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for letter in letters %}
+        <tr>
+          <td>
+            <span style="font-size:12px;font-weight:600;color:var(--brand)">{{ letter.letter_id }}</span>
+          </td>
+          <td style="max-width:220px;">
+            <a href="{% url 'letters:detail' letter.pk %}"
+               style="color:var(--text);text-decoration:none;font-size:13px;font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              {{ letter.title }}
+            </a>
+          </td>
+          <td style="font-size:12px;color:var(--muted)">{{ letter.get_category_display }}</td>
+          <td style="font-size:12px;color:var(--muted)">{{ letter.word_count }}</td>
+          <td><span class="pill pill-{{ letter.status }}">{{ letter.get_status_display }}</span></td>
+          <td style="font-size:13px;font-weight:600;">
+            {% if letter.status == 'approved' %}
+              <span style="color:#1a9e75">+${{ letter.earnings|floatformat:2 }}</span>
+            {% else %}
+              <span style="color:var(--muted)">–</span>
+            {% endif %}
+          </td>
+          <td style="font-size:12px;color:var(--muted)">{{ letter.submitted_at|date:"M j, Y" }}</td>
+          <td>
+            <a href="{% url 'letters:detail' letter.pk %}"
+               style="font-size:12px;color:var(--brand);text-decoration:none;font-weight:500">
+              View →
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if letters.has_other_pages %}
+    <div class="d-flex justify-content-center mt-4 gap-2">
+      {% if letters.has_previous %}
+        <a href="?status={{ status_filter }}&page={{ letters.previous_page_number }}"
+           style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none;color:var(--text)">
+          ← Prev
+        </a>
+      {% endif %}
+      <span style="padding:6px 14px;background:var(--brand);color:#fff;border-radius:6px;font-size:12px;font-weight:600">
+        Page {{ letters.number }} of {{ letters.paginator.num_pages }}
+      </span>
+      {% if letters.has_next %}
+        <a href="?status={{ status_filter }}&page={{ letters.next_page_number }}"
+           style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none;color:var(--text)">
+          Next →
+        </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  {% else %}
+    <div class="text-center py-5" style="color:var(--muted)">
+      <i class="bi bi-file-earmark-x" style="font-size:40px;opacity:0.25;display:block;margin-bottom:12px"></i>
+      <p style="font-size:14px;margin-bottom:16px">
+        {% if status_filter != 'all' %}No {{ status_filter }} letters found.{% else %}You haven't submitted any letters yet.{% endif %}
+      </p>
+      <a href="{% url 'letters:write' %}" class="btn-brand" style="text-decoration:none">
+        Write your first letter
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
