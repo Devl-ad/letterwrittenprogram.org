@@ -100,8 +100,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 LETTER_APPROVAL_PAYMENT = 25.00
 
 # Crypto deposit wallets — replace with your real addresses
+
 CRYPTO_WALLETS = {
-    "BTC": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-    "USDT": "TN3W4T6gNgLkEVfGqRDRYdvKJCDTrHNDHR",
-    "ETH": "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+    "BTC": "bc1qucr0dpzhj6z8uk8j9ydt02c8pa7z2939mqeuet",
+    "USDT": "TEenN3dD4uQXNzbXaEKxua5Z8Ct8kdVWLj",
+    "ETH": "0x0A6B86f2E9A57397161d9e79453fa21Aacd37508",
 }
