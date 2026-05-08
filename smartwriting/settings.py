@@ -1,9 +1,18 @@
 from pathlib import Path
 
+
+import os
+import environ
+
+env = environ.Env()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = "django-insecure-change-this-in-production-use-env-var"
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+SECRET_KEY = env("SECRET_KEY")
+
+DEBUG = env.bool("DEBUG")
+
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -94,7 +103,6 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard:index"
 LOGOUT_REDIRECT_URL = "login"
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Per-letter payout amount
 LETTER_APPROVAL_PAYMENT = 95.50
@@ -106,3 +114,20 @@ CRYPTO_WALLETS = {
     "USDT": "TEenN3dD4uQXNzbXaEKxua5Z8Ct8kdVWLj",
     "ETH": "0x0A6B86f2E9A57397161d9e79453fa21Aacd37508",
 }
+
+
+EMAIL_BACKEND = env("EMAIL_BACKEND")
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+EMAIL_PORT = env("EMAIL_PORT")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+EMAIL_USE_SSL = False
+
+# Highly recommended extras
+# must match EMAIL_HOST_USER or a verified alias
+SERVER_EMAIL = "info@letterwrittenprogram.org"
+
+# Optional but helps deliverability
+EMAIL_SUBJECT_PREFIX = "letterwrittenprogram.org"  # makes it look less spammy

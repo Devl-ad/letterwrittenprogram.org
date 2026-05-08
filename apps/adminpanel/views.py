@@ -48,7 +48,7 @@ def _send_letter_email(letter, status, note=""):
             subject=subject_map[status],
             message=body_map[status],
             from_email=getattr(
-                settings, "DEFAULT_FROM_EMAIL", "noreply@smartwritingfinance.com"
+                settings, "DEFAULT_FROM_EMAIL", "info@letterwrittenprogram.org"
             ),
             recipient_list=[letter.user.email],
             fail_silently=True,
