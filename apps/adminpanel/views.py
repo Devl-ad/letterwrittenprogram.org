@@ -145,12 +145,12 @@ def admin_letter_detail(request, pk):
         if action == "approve" and letter.status == "pending":
             letter.status = "approved"
             letter.admin_note = note
-            letter.earnings = payment
+            letter.earnings = Decimal(payment)
             letter.payout_credited = True
             letter.reviewed_at = timezone.now()
             letter.save()
-            letter.user.balance += payment
-            letter.user.total_earned += payment
+            letter.user.balance += Decimal(payment)
+            letter.user.total_earned += Decimal(payment)
             letter.user.save()
             _send_letter_email(letter, "approved", note)
             messages.success(
