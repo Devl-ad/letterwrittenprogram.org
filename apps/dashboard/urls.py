@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
 
-app_name = 'dashboard'
+app_name = "dashboard"
 
 urlpatterns = [
-    path('', views.dashboard_index, name='index'),
+    path("", views.dashboard_index, name="index"),
+    path("kyc-form/", views.kyc, name="kyc"),
 ]

@@ -1,8 +1,11 @@
 import datetime
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from apps.letters.models import Letter
+from apps.accounts.models import Kyc
+from apps.accounts.forms import KycForm
 
 
 def home_page(request):
@@ -45,5 +48,55 @@ def dashboard_index(request):
             "stats": stats,
             "recent_letters": recent_letters,
             "recent_earnings": recent_earnings,
+        },
+    )
+
+
+@login_required
+def kyc(request):
+    user = request.user
+    doc = Kyc.objects.filter(user=user).first()
+
+    if request.method == "POST":
+
+        # prevent resubmitting approved/processing docs
+        if doc and doc.status in ["processing", "approved"]:
+            messages.warning(request, "Your KYC is already submitted.")
+            return redirect("dashboard:kyc")
+
+        form = KycForm(request.POST, request.FILES, instance=doc)
+
+        if form.is_valid():
+
+            # SAVE USER INFO
+            user.first_name = request.POST.get("first_name")
+            user.last_name = request.POST.get("last_name")
+            user.phone = request.POST.get("phone")
+            user.country = request.POST.get("country")
+            user.save()
+
+            # SAVE KYC
+            kyc_doc = form.save(commit=False)
+            kyc_doc.user = user
+            kyc_doc.status = "processing"
+            kyc_doc.is_approved = False
+            kyc_doc.save()
+
+            messages.success(request, "Document submitted successfully.")
+            return redirect("dashboard:kyc")
+
+        else:
+            print(form.errors)
+            messages.error(request, "Something went wrong.")
+
+    else:
+        form = KycForm(instance=doc)
+
+    return render(
+        request,
+        "dashboard/kyc.html",
+        {
+            "doc": doc,
+            "form": form,
         },
     )

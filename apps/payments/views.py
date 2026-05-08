@@ -41,7 +41,12 @@ def deposit_view(request):
 
 @login_required
 def withdrawal_view(request):
+    user = request.user
+    if user.is_kyc_verified != True:
+        messages.error(request, "Verify Your Account")
+        return redirect("dashboard:kyc")
     form = WithdrawalForm(user=request.user, data=request.POST or None)
+
     if request.method == "POST" and form.is_valid():
         withdrawal = form.save(commit=False)
         withdrawal.user = request.user
