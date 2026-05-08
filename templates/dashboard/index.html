@@ -43,24 +43,7 @@
       </div>
     </div>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="stat-card">
-      <div class="sc-icon" style="background: #eff6ff">
-        <i
-          class="bi bi-graph-up-arrow"
-          style="color: var(--blue); font-size: 18px"
-        ></i>
-      </div>
-      <div class="sc-label">Total Earned</div>
-      <div class="sc-value">${{ stats.total_earned|floatformat:2 }}</div>
-      <div
-        class="sc-sub"
-        style="color: var(--blue); font-weight: 600; margin-top: 8px"
-      >
-        <i class="bi bi-arrow-up-short"></i> Lifetime
-      </div>
-    </div>
-  </div>
+
   <div class="col-6 col-md-3">
     <div class="stat-card">
       <div class="sc-icon" style="background: #fef9c3">
@@ -86,6 +69,19 @@
       <div class="sc-value">{{ stats.approved }}</div>
       <div class="sc-sub">
         {% if stats.total %}{% widthratio stats.approved stats.total 100 %}%
+        rate{% else %}0%{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="sc-icon" style="background: #fcdcdc">
+        <i class="bi bi-stop-circle" style="color: red; font-size: 18px"></i>
+      </div>
+      <div class="sc-label">Declined</div>
+      <div class="sc-value">{{ stats.declined }}</div>
+      <div class="sc-sub">
+        {% if stats.total %}{% widthratio stats.declined stats.total 100 %}%
         rate{% else %}0%{% endif %}
       </div>
     </div>

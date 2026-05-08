@@ -140,7 +140,7 @@ def admin_letter_detail(request, pk):
     if request.method == "POST":
         action = request.POST.get("action")
         note = request.POST.get("admin_note", "").strip()
-        payment = getattr(settings, "LETTER_APPROVAL_PAYMENT", 25.00)
+        payment = getattr(settings, "LETTER_APPROVAL_PAYMENT", 99.50)
 
         if action == "approve" and letter.status == "pending":
             letter.status = "approved"

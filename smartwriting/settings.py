@@ -97,7 +97,7 @@ LOGOUT_REDIRECT_URL = "login"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Per-letter payout amount
-LETTER_APPROVAL_PAYMENT = 25.00
+LETTER_APPROVAL_PAYMENT = 95.50
 
 # Crypto deposit wallets — replace with your real addresses
 
