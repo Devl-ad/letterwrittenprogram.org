@@ -1,0 +1,90 @@
+{% extends "adminpanel/base.html" %}
+{% load humanize %}
+{% block title %}Withdrawals{% endblock %}
+{% block page_title %}Withdrawals{% endblock %}
+{% block page_sub %}Process or reject withdrawal requests{% endblock %}
+
+{% block content %}
+<div class="adm-tabs">
+  <a href="?status=" class="adm-tab {% if not status %}active{% endif %}">All ({{ counts.all }})</a>
+  <a href="?status=pending" class="adm-tab {% if status == 'pending' %}active{% endif %}">Pending ({{ counts.pending }})</a>
+  <a href="?status=processing" class="adm-tab {% if status == 'processing' %}active{% endif %}">Processing ({{ counts.processing }})</a>
+  <a href="?status=completed" class="adm-tab {% if status == 'completed' %}active{% endif %}">Completed ({{ counts.completed }})</a>
+  <a href="?status=rejected" class="adm-tab {% if status == 'rejected' %}active{% endif %}">Rejected ({{ counts.rejected }})</a>
+</div>
+
+<div class="adm-panel">
+  {% if withdrawals %}
+    <table class="adm-table">
+      <thead>
+        <tr><th>User</th><th>Amount</th><th>Bank</th><th>Account</th><th>SWIFT</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for w in withdrawals %}
+        <tr>
+          <td>
+            <a href="{% url 'adminpanel:user_detail' w.user.pk %}" style="color:var(--blue);font-weight:600;text-decoration:none;font-size:13px">{{ w.user.username }}</a>
+            <div style="font-size:11px;color:var(--muted)">{{ w.user.email }}</div>
+          </td>
+          <td style="font-weight:800;font-size:15px;color:var(--brand)">${{ w.amount|floatformat:2 }}</td>
+          <td style="font-size:12px;font-weight:500">{{ w.bank_name }}</td>
+          <td style="font-size:12px;color:var(--muted)">
+            <div>{{ w.account_name }}</div>
+            <div style="font-family:monospace;font-size:11px">{{ w.account_number }}</div>
+          </td>
+          <td style="font-size:11px;color:var(--muted);font-family:monospace">{{ w.swift_code|default:"—" }}</td>
+          <td><span class="pill pill-{{ w.status }}">{{ w.get_status_display }}</span></td>
+          <td style="font-size:12px;color:var(--muted)">{{ w.created_at|date:"M j, Y" }}</td>
+          <td>
+            {% if w.status in 'pending processing' %}
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                {% if w.status == 'pending' %}
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="withdrawal_id" value="{{ w.pk }}">
+                    <button name="action" value="processing" class="btn-adm btn-adm-amber" style="padding:4px 10px;font-size:11px">
+                      <i class="bi bi-arrow-repeat"></i> Processing
+                    </button>
+                  </form>
+                {% endif %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="withdrawal_id" value="{{ w.pk }}">
+                  <button name="action" value="complete" class="btn-adm btn-adm-success" style="padding:4px 10px;font-size:11px"
+                    onclick="return confirm('Mark this withdrawal as completed?')">
+                    <i class="bi bi-check-lg"></i> Complete
+                  </button>
+                </form>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="withdrawal_id" value="{{ w.pk }}">
+                  <button name="action" value="reject" class="btn-adm btn-adm-danger" style="padding:4px 10px;font-size:11px"
+                    onclick="return confirm('Reject this withdrawal and refund ${{ w.amount }} to {{ w.user.username }}?')">
+                    <i class="bi bi-x-lg"></i> Reject
+                  </button>
+                </form>
+              </div>
+            {% else %}
+              <span style="font-size:12px;color:var(--muted)">{{ w.processed_at|date:"M j"|default:"—" }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if withdrawals.has_other_pages %}
+    <div class="d-flex justify-content-center gap-2 py-3" style="border-top:1px solid var(--border)">
+      {% if withdrawals.has_previous %}<a href="?status={{ status }}&page={{ withdrawals.previous_page_number }}" class="btn-adm btn-adm-outline" style="padding:6px 14px;font-size:12px">← Prev</a>{% endif %}
+      <span style="padding:6px 16px;background:var(--brand);color:#fff;border-radius:8px;font-size:12px;font-weight:700">{{ withdrawals.number }} / {{ withdrawals.paginator.num_pages }}</span>
+      {% if withdrawals.has_next %}<a href="?status={{ status }}&page={{ withdrawals.next_page_number }}" class="btn-adm btn-adm-outline" style="padding:6px 14px;font-size:12px">Next →</a>{% endif %}
+    </div>
+    {% endif %}
+  {% else %}
+    <div class="text-center py-5" style="color:var(--muted)">
+      <i class="bi bi-arrow-up-circle" style="font-size:36px;display:block;margin-bottom:10px;color:#d1d5db"></i>
+      No withdrawals found.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

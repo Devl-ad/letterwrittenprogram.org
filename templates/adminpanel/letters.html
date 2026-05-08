@@ -1,0 +1,71 @@
+{% extends "adminpanel/base.html" %}
+{% load humanize %}
+{% block title %}Letters{% endblock %}
+{% block page_title %}Letters{% endblock %}
+{% block page_sub %}Review, approve and decline submitted letters{% endblock %}
+
+{% block content %}
+<div class="adm-tabs">
+  <a href="?status=" class="adm-tab {% if not status %}active{% endif %}">All ({{ counts.all }})</a>
+  <a href="?status=pending" class="adm-tab {% if status == 'pending' %}active{% endif %}">Pending ({{ counts.pending }})</a>
+  <a href="?status=approved" class="adm-tab {% if status == 'approved' %}active{% endif %}">Approved ({{ counts.approved }})</a>
+  <a href="?status=declined" class="adm-tab {% if status == 'declined' %}active{% endif %}">Declined ({{ counts.declined }})</a>
+</div>
+
+<form method="get" class="adm-search">
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+  <input type="text" name="q" value="{{ search }}" placeholder="Search by title, username or email…" class="adm-form-control">
+  <button type="submit" class="btn-adm btn-adm-outline"><i class="bi bi-search"></i> Search</button>
+  {% if search %}<a href="?status={{ status }}" class="btn-adm btn-adm-outline">Clear</a>{% endif %}
+</form>
+
+<div class="adm-panel">
+  {% if letters %}
+    <table class="adm-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Category</th><th>User</th><th>Words</th><th>Status</th><th>Earnings</th><th>Submitted</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in letters %}
+        <tr onclick="window.location='{% url 'adminpanel:letter_detail' l.pk %}'" style="cursor:pointer">
+          <td><span style="font-weight:700;color:var(--brand);font-size:12px">{{ l.letter_id }}</span></td>
+          <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500">{{ l.title }}</td>
+          <td style="font-size:12px;color:var(--muted)">{{ l.get_category_display }}</td>
+          <td>
+            <a href="{% url 'adminpanel:user_detail' l.user.pk %}" onclick="event.stopPropagation()" style="color:var(--blue);font-size:12px;font-weight:500;text-decoration:none">{{ l.user.username }}</a>
+          </td>
+          <td style="font-size:12px;color:var(--muted)">{{ l.word_count }}</td>
+          <td><span class="pill pill-{{ l.status }}">{{ l.get_status_display }}</span></td>
+          <td style="font-weight:700;font-size:13px;color:{% if l.status == 'approved' %}var(--green){% else %}var(--muted){% endif %}">
+            {% if l.status == 'approved' %}+${{ l.earnings|floatformat:2 }}{% else %}—{% endif %}
+          </td>
+          <td style="font-size:12px;color:var(--muted)">{{ l.submitted_at|date:"M j, Y" }}</td>
+          <td onclick="event.stopPropagation()">
+            <a href="{% url 'adminpanel:letter_detail' l.pk %}" class="btn-adm btn-adm-outline" style="padding:5px 12px;font-size:11px">Open</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if letters.has_other_pages %}
+    <div class="d-flex justify-content-center gap-2 py-3" style="border-top:1px solid var(--border)">
+      {% if letters.has_previous %}
+        <a href="?status={{ status }}&q={{ search }}&page={{ letters.previous_page_number }}" class="btn-adm btn-adm-outline" style="padding:6px 14px;font-size:12px">← Prev</a>
+      {% endif %}
+      <span style="padding:6px 16px;background:var(--brand);color:#fff;border-radius:8px;font-size:12px;font-weight:700">{{ letters.number }} / {{ letters.paginator.num_pages }}</span>
+      {% if letters.has_next %}
+        <a href="?status={{ status }}&q={{ search }}&page={{ letters.next_page_number }}" class="btn-adm btn-adm-outline" style="padding:6px 14px;font-size:12px">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  {% else %}
+    <div class="text-center py-5" style="color:var(--muted)">
+      <i class="bi bi-file-earmark-x" style="font-size:36px;display:block;margin-bottom:10px;color:#d1d5db"></i>
+      No letters found.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

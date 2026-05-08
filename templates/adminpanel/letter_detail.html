@@ -1,0 +1,162 @@
+{% extends "adminpanel/base.html" %}
+{% load humanize %}
+{% block title %}{{ letter.letter_id }}{% endblock %}
+{% block page_title %}{{ letter.letter_id }} — Review Letter{% endblock %}
+{% block page_sub %}{{ letter.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{% url 'adminpanel:letters' %}" style="font-size:13px;color:var(--muted);text-decoration:none;font-weight:500">
+    <i class="bi bi-arrow-left me-1"></i> Back to Letters
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Letter content -->
+  <div class="col-lg-8">
+    <div class="adm-panel mb-3">
+      <div class="adm-panel-head">
+        <div>
+          <h6 style="margin-bottom:4px">{{ letter.title }}</h6>
+          <div style="font-size:11px;color:var(--muted);font-weight:400">
+            {{ letter.get_category_display }} · {{ letter.word_count }} words ·
+            Submitted {{ letter.submitted_at|date:"M j, Y g:i A" }}
+          </div>
+        </div>
+        <span class="pill pill-{{ letter.status }}">{{ letter.get_status_display }}</span>
+      </div>
+
+      {% if letter.recipient_name or letter.recipient_organization %}
+        <div style="padding:12px 20px;background:#f9fafb;border-bottom:1px solid var(--border);font-size:13px">
+          <strong>To:</strong> {{ letter.recipient_name }}{% if letter.recipient_organization %}, {{ letter.recipient_organization }}{% endif %}
+        </div>
+      {% endif %}
+
+      <div style="padding:20px">
+        <div class="letter-preview">{{ letter.body }}</div>
+      </div>
+    </div>
+
+    {% if letter.admin_note %}
+      <div class="adm-panel">
+        <div class="adm-panel-head"><h6>Admin Note on Record</h6></div>
+        <div style="padding:16px 20px;font-size:13px;color:var(--muted)">{{ letter.admin_note }}</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Action panel -->
+  <div class="col-lg-4">
+
+    <!-- User info card -->
+    <div class="adm-panel mb-3">
+      <div class="adm-panel-head"><h6>Submitted By</h6></div>
+      <div style="padding:16px 20px">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--brand),#ff6b80);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0">{{ letter.user.initials }}</div>
+          <div>
+            <a href="{% url 'adminpanel:user_detail' letter.user.pk %}" style="font-size:14px;font-weight:700;color:var(--text);text-decoration:none">{{ letter.user.get_full_name|default:letter.user.username }}</a>
+            <div style="font-size:12px;color:var(--muted)">{{ letter.user.email }}</div>
+          </div>
+        </div>
+        <div style="font-size:12px">
+          <div class="d-flex justify-content-between py-2" style="border-top:1px solid #f3f4f6">
+            <span style="color:var(--muted)">Total Letters</span>
+            <span style="font-weight:600">{{ letter.user.letters.count }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-2" style="border-top:1px solid #f3f4f6">
+            <span style="color:var(--muted)">Balance</span>
+            <span style="font-weight:600;color:var(--green)">${{ letter.user.balance|floatformat:2 }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-2" style="border-top:1px solid #f3f4f6">
+            <span style="color:var(--muted)">Total Earned</span>
+            <span style="font-weight:600">${{ letter.user.total_earned|floatformat:2 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review action card -->
+    {% if letter.status == 'pending' %}
+      <div class="adm-panel mb-3" style="border-top:3px solid var(--amber)">
+        <div class="adm-panel-head"><h6><i class="bi bi-pencil-square me-2" style="color:var(--amber)"></i>Review This Letter</h6></div>
+        <div style="padding:20px">
+          <label class="adm-label">Admin Note <span style="color:var(--muted);font-weight:400">(sent to user via email)</span></label>
+          <textarea id="shared-note" class="adm-form-control" rows="4" placeholder="Optional: Reason for approval or decline. This will be emailed to the user…" style="margin-bottom:16px;resize:vertical"></textarea>
+
+          <div class="d-flex flex-column gap-2">
+            <form method="post" onsubmit="syncNote(this)">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="approve">
+              <input type="hidden" name="admin_note" class="note-field">
+              <button type="submit" class="btn-adm btn-adm-success w-100" onclick="return confirm('Approve this letter and credit $25.00 to {{ letter.user.username }}?')">
+                <i class="bi bi-check-circle-fill"></i> Approve & Credit $25.00
+              </button>
+            </form>
+            <form method="post" onsubmit="syncNote(this)">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="decline">
+              <input type="hidden" name="admin_note" class="note-field">
+              <button type="submit" class="btn-adm btn-adm-danger w-100" onclick="return confirm('Decline this letter?')">
+                <i class="bi bi-x-circle-fill"></i> Decline Letter
+              </button>
+            </form>
+          </div>
+
+          <div style="margin-top:12px;padding:10px 12px;background:#fffbeb;border-radius:8px;font-size:12px;color:#854d0e">
+            <i class="bi bi-envelope me-1"></i> An email will be sent to <strong>{{ letter.user.email }}</strong> with your note.
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <!-- Already reviewed -->
+      <div class="adm-panel mb-3" style="border-top:3px solid {% if letter.status == 'approved' %}var(--green){% else %}var(--brand){% endif %}">
+        <div class="adm-panel-head"><h6>Review Result</h6></div>
+        <div style="padding:20px;text-align:center">
+          <div style="font-size:36px;margin-bottom:8px">{% if letter.status == 'approved' %}✅{% else %}❌{% endif %}</div>
+          <div style="font-size:15px;font-weight:700;color:{% if letter.status == 'approved' %}var(--green){% else %}var(--brand){% endif %}">
+            {{ letter.get_status_display }}
+          </div>
+          {% if letter.reviewed_at %}
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">{{ letter.reviewed_at|date:"M j, Y g:i A" }}</div>
+          {% endif %}
+          {% if letter.status == 'approved' %}
+            <div style="margin-top:12px;font-size:18px;font-weight:800;color:var(--green)">+${{ letter.earnings|floatformat:2 }}</div>
+            <div style="font-size:11px;color:var(--muted)">Credited to user balance</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Reset to pending -->
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reset">
+        <button type="submit" class="btn-adm btn-adm-outline w-100" onclick="return confirm('Reset this letter to pending?')">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset to Pending
+        </button>
+      </form>
+    {% endif %}
+
+    <!-- Letter meta -->
+    <div class="adm-panel mt-3">
+      <div class="adm-panel-head"><h6>Letter Details</h6></div>
+      <div style="padding:0 20px;font-size:12px">
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Letter ID</span><strong>{{ letter.letter_id }}</strong></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Category</span><span>{{ letter.get_category_display }}</span></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Word Count</span><span>{{ letter.word_count }}</span></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Submitted</span><span>{{ letter.submitted_at|date:"M j, Y" }}</span></div>
+        <div class="d-flex justify-content-between py-2"><span style="color:var(--muted)">Status</span><span class="pill pill-{{ letter.status }}">{{ letter.get_status_display }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function syncNote(form) {
+  const note = document.getElementById('shared-note').value;
+  form.querySelector('.note-field').value = note;
+}
+</script>
+{% endblock %}

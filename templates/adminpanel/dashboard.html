@@ -1,0 +1,162 @@
+{% extends "adminpanel/base.html" %}
+{% load humanize %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_sub %}Smart Writing Finance — Control Panel{% endblock %}
+
+{% block content %}
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="adm-stat" style="border-top:3px solid var(--blue)">
+      <div class="adm-stat-icon" style="background:#eff6ff"><i class="bi bi-people-fill" style="color:var(--blue)"></i></div>
+      <div class="adm-stat-label">Total Users</div>
+      <div class="adm-stat-value">{{ stats.total_users }}</div>
+      <div class="adm-stat-sub">+{{ stats.new_users_today }} today</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="adm-stat" style="border-top:3px solid var(--amber)">
+      <div class="adm-stat-icon" style="background:#fffbeb"><i class="bi bi-hourglass-split" style="color:var(--amber)"></i></div>
+      <div class="adm-stat-label">Pending Letters</div>
+      <div class="adm-stat-value" style="color:var(--amber)">{{ stats.pending_letters }}</div>
+      <div class="adm-stat-sub">Needs review</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="adm-stat" style="border-top:3px solid var(--green)">
+      <div class="adm-stat-icon" style="background:#f0fdf4"><i class="bi bi-check-circle-fill" style="color:var(--green)"></i></div>
+      <div class="adm-stat-label">Total Paid Out</div>
+      <div class="adm-stat-value" style="color:var(--green)">${{ stats.total_paid_out|floatformat:2|intcomma }}</div>
+      <div class="adm-stat-sub">{{ stats.approved_letters }} approved</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="adm-stat" style="border-top:3px solid var(--brand)">
+      <div class="adm-stat-icon" style="background:#fff0f2"><i class="bi bi-arrow-up-circle-fill" style="color:var(--brand)"></i></div>
+      <div class="adm-stat-label">Pending Withdrawals</div>
+      <div class="adm-stat-value" style="color:var(--brand)">{{ stats.pending_withdrawals }}</div>
+      <div class="adm-stat-sub">{{ stats.pending_deposits }} deposits pending</div>
+    </div>
+  </div>
+</div>
+
+<!-- Second row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4 col-6">
+    <div class="adm-stat">
+      <div class="adm-stat-label">Total Letters</div>
+      <div class="adm-stat-value">{{ stats.total_letters }}</div>
+      <div class="adm-stat-sub">All time submissions</div>
+    </div>
+  </div>
+  <div class="col-md-4 col-6">
+    <div class="adm-stat">
+      <div class="adm-stat-label">Approved</div>
+      <div class="adm-stat-value" style="color:var(--green)">{{ stats.approved_letters }}</div>
+      <div class="adm-stat-sub">
+        {% if stats.total_letters %}{% widthratio stats.approved_letters stats.total_letters 100 %}% approval rate{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-6">
+    <div class="adm-stat">
+      <div class="adm-stat-label">Declined</div>
+      <div class="adm-stat-value" style="color:var(--brand)">{{ stats.declined_letters }}</div>
+      <div class="adm-stat-sub">Letters not approved</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Pending Letters -->
+  <div class="col-lg-8">
+    <div class="adm-panel">
+      <div class="adm-panel-head">
+        <h6><i class="bi bi-clock-fill me-2" style="color:var(--amber)"></i>Pending Letters</h6>
+        <a href="{% url 'adminpanel:letters' %}?status=pending" style="font-size:12px;color:var(--blue);text-decoration:none;font-weight:600">View all →</a>
+      </div>
+      {% if recent_letters %}
+        <table class="adm-table">
+          <thead><tr><th>ID</th><th>Title</th><th>User</th><th>Words</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for l in recent_letters %}
+            <tr onclick="window.location='{% url 'adminpanel:letter_detail' l.pk %}'" style="cursor:pointer">
+              <td><span style="font-weight:700;color:var(--brand);font-size:12px">{{ l.letter_id }}</span></td>
+              <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500">{{ l.title }}</td>
+              <td>
+                <a href="{% url 'adminpanel:user_detail' l.user.pk %}" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:none;font-size:12px;font-weight:500">
+                  {{ l.user.username }}
+                </a>
+              </td>
+              <td style="color:var(--muted);font-size:12px">{{ l.word_count }}</td>
+              <td style="color:var(--muted);font-size:12px">{{ l.submitted_at|date:"M j" }}</td>
+              <td onclick="event.stopPropagation()">
+                <a href="{% url 'adminpanel:letter_detail' l.pk %}" class="btn-adm btn-adm-primary" style="padding:5px 12px;font-size:11px">
+                  Review
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="text-center py-4" style="color:var(--muted);font-size:13px">
+          <i class="bi bi-check-all" style="font-size:30px;display:block;margin-bottom:8px;color:#d1d5db"></i>
+          All letters have been reviewed!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <div class="col-lg-4">
+    <!-- Pending Deposits -->
+    <div class="adm-panel mb-3">
+      <div class="adm-panel-head">
+        <h6><i class="bi bi-arrow-down-circle me-2" style="color:var(--green)"></i>Pending Deposits</h6>
+        <a href="{% url 'adminpanel:deposits' %}?status=pending" style="font-size:12px;color:var(--blue);text-decoration:none;font-weight:600">All →</a>
+      </div>
+      {% if recent_deposits %}
+        <div style="padding:0 16px">
+          {% for d in recent_deposits %}
+            <div class="d-flex align-items-center justify-content-between py-2" style="border-bottom:1px solid #f3f4f6;font-size:13px">
+              <div>
+                <div style="font-weight:600">{{ d.method }} — ${{ d.amount_usd|floatformat:2 }}</div>
+                <div style="font-size:11px;color:var(--muted)">{{ d.user.username }} · {{ d.created_at|date:"M j" }}</div>
+              </div>
+              <form method="post" action="{% url 'adminpanel:deposits' %}">
+                {% csrf_token %}
+                <input type="hidden" name="deposit_id" value="{{ d.pk }}">
+                <button name="action" value="confirm" class="btn-adm btn-adm-success" style="padding:4px 10px;font-size:11px">Confirm</button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-3" style="color:var(--muted);font-size:12px">No pending deposits</div>
+      {% endif %}
+    </div>
+
+    <!-- Recent Users -->
+    <div class="adm-panel">
+      <div class="adm-panel-head">
+        <h6><i class="bi bi-person-plus me-2" style="color:var(--blue)"></i>New Users</h6>
+        <a href="{% url 'adminpanel:users' %}" style="font-size:12px;color:var(--blue);text-decoration:none;font-weight:600">All →</a>
+      </div>
+      <div style="padding:0 16px">
+        {% for u in recent_users %}
+          <div class="d-flex align-items-center gap-3 py-2" style="border-bottom:1px solid #f3f4f6">
+            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--brand),#ff6b80);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">{{ u.initials }}</div>
+            <div style="flex:1;min-width:0">
+              <a href="{% url 'adminpanel:user_detail' u.pk %}" style="font-size:13px;font-weight:600;color:var(--text);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.get_full_name|default:u.username }}</a>
+              <div style="font-size:11px;color:var(--muted)">{{ u.date_joined|date:"M j, Y" }}</div>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--green)">${{ u.balance|floatformat:2 }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

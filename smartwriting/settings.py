@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     # 'django_otp.plugins.otp_totp',
     # 'two_factor',
     # Local apps
+    "apps.adminpanel",
     "apps.accounts",
     "apps.letters",
     "apps.payments",
@@ -48,6 +49,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.adminpanel.context_processors.admin_counts",
             ],
         },
     }

@@ -1,0 +1,188 @@
+{% extends "adminpanel/base.html" %}
+{% load humanize %}
+{% block title %}{{ u.username }}{% endblock %}
+{% block page_title %}User: {{ u.get_full_name|default:u.username }}{% endblock %}
+{% block page_sub %}@{{ u.username }} — Member since {{ u.date_joined|date:"M j, Y" }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{% url 'adminpanel:users' %}" style="font-size:13px;color:var(--muted);text-decoration:none;font-weight:500">
+    <i class="bi bi-arrow-left me-1"></i> Back to Users
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Left -->
+  <div class="col-lg-4">
+
+    <!-- Profile card -->
+    <div class="adm-panel mb-3" style="text-align:center;padding:28px 20px">
+      <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--brand),#ff6b80);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;margin:0 auto 14px">{{ u.initials }}</div>
+      <div style="font-size:17px;font-weight:700">{{ u.get_full_name|default:u.username }}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">{{ u.email }}</div>
+      <div style="margin-top:10px">
+        {% if u.is_active %}<span class="pill pill-active">Active</span>{% else %}<span class="pill pill-inactive">Deactivated</span>{% endif %}
+      </div>
+      <hr style="margin:16px 0;border-color:var(--border)">
+      <div class="row g-2">
+        <div class="col-4">
+          <div style="font-size:20px;font-weight:800">{{ u.letters.count }}</div>
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Letters</div>
+        </div>
+        <div class="col-4">
+          <div style="font-size:20px;font-weight:800;color:var(--green)">${{ u.balance|floatformat:0 }}</div>
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Balance</div>
+        </div>
+        <div class="col-4">
+          <div style="font-size:20px;font-weight:800">${{ u.total_earned|floatformat:0 }}</div>
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Earned</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account info -->
+    <div class="adm-panel mb-3">
+      <div class="adm-panel-head"><h6>Account Info</h6></div>
+      <div style="padding:0 20px;font-size:12px">
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Username</span><strong>{{ u.username }}</strong></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Phone</span><span>{{ u.phone|default:"—" }}</span></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Country</span><span>{{ u.country|default:"—" }}</span></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #f3f4f6"><span style="color:var(--muted)">Joined</span><span>{{ u.date_joined|date:"M j, Y" }}</span></div>
+        <div class="d-flex justify-content-between py-2"><span style="color:var(--muted)">Last Login</span><span>{{ u.last_login|date:"M j, Y"|default:"Never" }}</span></div>
+      </div>
+    </div>
+
+    <!-- Activate/Deactivate -->
+    <div class="adm-panel mb-3">
+      <div class="adm-panel-head"><h6>Account Control</h6></div>
+      <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="toggle_active">
+          <button type="submit" class="btn-adm {% if u.is_active %}btn-adm-danger{% else %}btn-adm-success{% endif %} w-100"
+            onclick="return confirm('{% if u.is_active %}Deactivate{% else %}Activate{% endif %} this user?')">
+            {% if u.is_active %}
+              <i class="bi bi-person-slash"></i> Deactivate Account
+            {% else %}
+              <i class="bi bi-person-check"></i> Activate Account
+            {% endif %}
+          </button>
+        </form>
+
+        <!-- Adjust balance -->
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="adjust_balance">
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input type="number" name="amount" step="0.01" min="0" placeholder="Amount $" class="adm-form-control" style="flex:1">
+            <select name="mode" class="adm-form-control" style="width:80px">
+              <option value="add">Add</option>
+              <option value="deduct">Deduct</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-adm btn-adm-blue w-100">
+            <i class="bi bi-wallet2"></i> Adjust Balance
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Send email -->
+    <div class="adm-panel">
+      <div class="adm-panel-head"><h6><i class="bi bi-envelope me-2"></i>Send Email</h6></div>
+      <div style="padding:16px 20px">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="send_email">
+          <div style="margin-bottom:10px">
+            <label class="adm-label">Subject</label>
+            <input type="text" name="subject" class="adm-form-control" placeholder="Email subject" required>
+          </div>
+          <div style="margin-bottom:12px">
+            <label class="adm-label">Message</label>
+            <textarea name="body" class="adm-form-control" rows="4" placeholder="Write your message…" required></textarea>
+          </div>
+          <button type="submit" class="btn-adm btn-adm-primary w-100">
+            <i class="bi bi-send-fill"></i> Send Email
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div class="col-lg-8">
+    <!-- Letters -->
+    <div class="adm-panel mb-4">
+      <div class="adm-panel-head"><h6>Letters ({{ letters.count }})</h6></div>
+      {% if letters %}
+        <table class="adm-table">
+          <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Earnings</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            {% for l in letters %}
+            <tr>
+              <td><span style="font-weight:700;color:var(--brand);font-size:12px">{{ l.letter_id }}</span></td>
+              <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500">{{ l.title }}</td>
+              <td><span class="pill pill-{{ l.status }}">{{ l.get_status_display }}</span></td>
+              <td style="font-weight:700;color:{% if l.status == 'approved' %}var(--green){% else %}var(--muted){% endif %}">
+                {% if l.status == 'approved' %}+${{ l.earnings|floatformat:2 }}{% else %}—{% endif %}
+              </td>
+              <td style="font-size:12px;color:var(--muted)">{{ l.submitted_at|date:"M j, Y" }}</td>
+              <td><a href="{% url 'adminpanel:letter_detail' l.pk %}" class="btn-adm btn-adm-outline" style="padding:4px 10px;font-size:11px">Review</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="text-center py-4" style="color:var(--muted);font-size:13px">No letters submitted yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- Deposits -->
+    <div class="adm-panel mb-4">
+      <div class="adm-panel-head"><h6>Recent Deposits</h6></div>
+      {% if deposits %}
+        <table class="adm-table">
+          <thead><tr><th>Method</th><th>Amount</th><th>Tx Hash</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for d in deposits %}
+            <tr>
+              <td style="font-weight:600">{{ d.method }}</td>
+              <td style="font-weight:700;color:var(--green)">${{ d.amount_usd|floatformat:2 }}</td>
+              <td style="font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.tx_hash|default:"—" }}</td>
+              <td><span class="pill pill-{{ d.status }}">{{ d.get_status_display }}</span></td>
+              <td style="font-size:12px;color:var(--muted)">{{ d.created_at|date:"M j, Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="text-center py-3" style="color:var(--muted);font-size:13px">No deposits yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- Withdrawals -->
+    <div class="adm-panel">
+      <div class="adm-panel-head"><h6>Recent Withdrawals</h6></div>
+      {% if withdrawals %}
+        <table class="adm-table">
+          <thead><tr><th>Amount</th><th>Bank</th><th>Account</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for w in withdrawals %}
+            <tr>
+              <td style="font-weight:700;color:var(--brand)">${{ w.amount|floatformat:2 }}</td>
+              <td style="font-size:12px">{{ w.bank_name }}</td>
+              <td style="font-size:12px;color:var(--muted)">{{ w.account_number }}</td>
+              <td><span class="pill pill-{{ w.status }}">{{ w.get_status_display }}</span></td>
+              <td style="font-size:12px;color:var(--muted)">{{ w.created_at|date:"M j, Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="text-center py-3" style="color:var(--muted);font-size:13px">No withdrawals yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

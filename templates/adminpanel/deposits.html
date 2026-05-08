@@ -1,0 +1,82 @@
+{% extends "adminpanel/base.html" %}
+{% load humanize %}
+{% block title %}Deposits{% endblock %}
+{% block page_title %}Deposits{% endblock %}
+{% block page_sub %}Confirm or reject user deposit requests{% endblock %}
+
+{% block content %}
+<div class="adm-tabs">
+  <a href="?status=" class="adm-tab {% if not status %}active{% endif %}">All ({{ counts.all }})</a>
+  <a href="?status=pending" class="adm-tab {% if status == 'pending' %}active{% endif %}">Pending ({{ counts.pending }})</a>
+  <a href="?status=confirmed" class="adm-tab {% if status == 'confirmed' %}active{% endif %}">Confirmed ({{ counts.confirmed }})</a>
+  <a href="?status=failed" class="adm-tab {% if status == 'failed' %}active{% endif %}">Failed ({{ counts.failed }})</a>
+</div>
+
+<div class="adm-panel">
+  {% if deposits %}
+    <table class="adm-table">
+      <thead>
+        <tr><th>User</th><th>Method</th><th>Amount</th><th>Tx Hash</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for d in deposits %}
+        <tr>
+          <td>
+            <a href="{% url 'adminpanel:user_detail' d.user.pk %}" style="color:var(--blue);font-weight:600;text-decoration:none;font-size:13px">
+              {{ d.user.username }}
+            </a>
+            <div style="font-size:11px;color:var(--muted)">{{ d.user.email }}</div>
+          </td>
+          <td>
+            <span style="font-weight:700;font-size:13px">{{ d.method }}</span>
+          </td>
+          <td style="font-weight:800;font-size:15px;color:var(--green)">${{ d.amount_usd|floatformat:2 }}</td>
+          <td style="font-size:11px;font-family:monospace;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            {{ d.tx_hash|default:"—" }}
+          </td>
+          <td><span class="pill pill-{{ d.status }}">{{ d.get_status_display }}</span></td>
+          <td style="font-size:12px;color:var(--muted)">{{ d.created_at|date:"M j, Y" }}</td>
+          <td>
+            {% if d.status == 'pending' %}
+              <div style="display:flex;gap:6px">
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="deposit_id" value="{{ d.pk }}">
+                  <button name="action" value="confirm" class="btn-adm btn-adm-success" style="padding:5px 12px;font-size:11px"
+                    onclick="return confirm('Confirm this deposit and credit ${{ d.amount_usd }} to {{ d.user.username }}?')">
+                    <i class="bi bi-check-lg"></i> Confirm
+                  </button>
+                </form>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="deposit_id" value="{{ d.pk }}">
+                  <button name="action" value="fail" class="btn-adm btn-adm-danger" style="padding:5px 12px;font-size:11px"
+                    onclick="return confirm('Mark this deposit as failed?')">
+                    <i class="bi bi-x-lg"></i> Fail
+                  </button>
+                </form>
+              </div>
+            {% else %}
+              <span style="font-size:12px;color:var(--muted)">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if deposits.has_other_pages %}
+    <div class="d-flex justify-content-center gap-2 py-3" style="border-top:1px solid var(--border)">
+      {% if deposits.has_previous %}<a href="?status={{ status }}&page={{ deposits.previous_page_number }}" class="btn-adm btn-adm-outline" style="padding:6px 14px;font-size:12px">← Prev</a>{% endif %}
+      <span style="padding:6px 16px;background:var(--brand);color:#fff;border-radius:8px;font-size:12px;font-weight:700">{{ deposits.number }} / {{ deposits.paginator.num_pages }}</span>
+      {% if deposits.has_next %}<a href="?status={{ status }}&page={{ deposits.next_page_number }}" class="btn-adm btn-adm-outline" style="padding:6px 14px;font-size:12px">Next →</a>{% endif %}
+    </div>
+    {% endif %}
+  {% else %}
+    <div class="text-center py-5" style="color:var(--muted)">
+      <i class="bi bi-arrow-down-circle" style="font-size:36px;display:block;margin-bottom:10px;color:#d1d5db"></i>
+      No deposits found.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
