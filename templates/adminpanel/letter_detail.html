@@ -56,9 +56,14 @@
           font-size: 13px;
         "
       >
-        <strong>To:</strong> {{ letter.recipient_name }}{% if
-        letter.recipient_organization %}, {{ letter.recipient_organization }}{%
-        endif %}
+        <strong>To:</strong> {{ letter.recipient_name }}
+        <!--  -->
+        {% if letter.recipient_organization %},
+        <!--  -->
+        {{ letter.recipient_organization }}
+        <!--  -->
+
+        {% endif %}
       </div>
       {% endif %}
 
