@@ -1,42 +1,74 @@
 {% extends "dashboard/base.html" %}
+<!--  -->
 {% load humanize %}
+<!--  -->
 {% block title %}Dashboard{% endblock %}
+<!--  -->
 {% block page_title %}Dashboard{% endblock %}
-{% block page_sub %}Welcome back, {{ user.first_name|default:user.username }}{% endblock %}
 
-{% block content %}
+<!--  -->
+
+{% block page_sub %}Welcome back, {{ user.first_name|default:user.username }}
+
+<!--  -->
+
+{% endblock %} {% block content %}
+<!--  -->
 
 <!-- Greeting (mobile) -->
 <div class="d-md-none mb-3">
-  <div style="font-size:13px;color:var(--muted)">Good Day,</div>
-  <div style="font-size:20px;font-weight:700">{{ user.get_full_name|default:user.username }}</div>
+  <div style="font-size: 13px; color: var(--muted)">Good Day,</div>
+  <div style="font-size: 20px; font-weight: 700">
+    {{ user.get_full_name|default:user.username }}
+  </div>
 </div>
 
 <!-- Balance + Earnings Hero Cards -->
 <div class="row g-3 mb-3">
   <div class="col-6 col-md-3">
     <div class="stat-card">
-      <div class="sc-icon" style="background:#f0fdf4"><i class="bi bi-wallet2" style="color:var(--green);font-size:18px"></i></div>
+      <div class="sc-icon" style="background: #f0fdf4">
+        <i
+          class="bi bi-wallet2"
+          style="color: var(--green); font-size: 18px"
+        ></i>
+      </div>
       <div class="sc-label">Balance</div>
       <div class="sc-value">${{ user.balance|floatformat:2 }}</div>
-      <div class="sc-sub" style="color:var(--green);font-weight:600;margin-top:8px">
+      <div
+        class="sc-sub"
+        style="color: var(--green); font-weight: 600; margin-top: 8px"
+      >
         <i class="bi bi-arrow-up-short"></i> Available
       </div>
     </div>
   </div>
   <div class="col-6 col-md-3">
     <div class="stat-card">
-      <div class="sc-icon" style="background:#eff6ff"><i class="bi bi-graph-up-arrow" style="color:var(--blue);font-size:18px"></i></div>
+      <div class="sc-icon" style="background: #eff6ff">
+        <i
+          class="bi bi-graph-up-arrow"
+          style="color: var(--blue); font-size: 18px"
+        ></i>
+      </div>
       <div class="sc-label">Total Earned</div>
       <div class="sc-value">${{ stats.total_earned|floatformat:2 }}</div>
-      <div class="sc-sub" style="color:var(--blue);font-weight:600;margin-top:8px">
+      <div
+        class="sc-sub"
+        style="color: var(--blue); font-weight: 600; margin-top: 8px"
+      >
         <i class="bi bi-arrow-up-short"></i> Lifetime
       </div>
     </div>
   </div>
   <div class="col-6 col-md-3">
     <div class="stat-card">
-      <div class="sc-icon" style="background:#fef9c3"><i class="bi bi-hourglass-split" style="color:var(--amber);font-size:18px"></i></div>
+      <div class="sc-icon" style="background: #fef9c3">
+        <i
+          class="bi bi-hourglass-split"
+          style="color: var(--amber); font-size: 18px"
+        ></i>
+      </div>
       <div class="sc-label">Pending</div>
       <div class="sc-value">{{ stats.pending }}</div>
       <div class="sc-sub">Letters in review</div>
@@ -44,38 +76,100 @@
   </div>
   <div class="col-6 col-md-3">
     <div class="stat-card">
-      <div class="sc-icon" style="background:#dcfce7"><i class="bi bi-check-circle" style="color:var(--green);font-size:18px"></i></div>
+      <div class="sc-icon" style="background: #dcfce7">
+        <i
+          class="bi bi-check-circle"
+          style="color: var(--green); font-size: 18px"
+        ></i>
+      </div>
       <div class="sc-label">Approved</div>
       <div class="sc-value">{{ stats.approved }}</div>
       <div class="sc-sub">
-        {% if stats.total %}{% widthratio stats.approved stats.total 100 %}% rate{% else %}0%{% endif %}
+        {% if stats.total %}{% widthratio stats.approved stats.total 100 %}%
+        rate{% else %}0%{% endif %}
       </div>
     </div>
   </div>
 </div>
 
 <!-- Investment Value Hero Banner -->
-<div class="hero-card mb-3" style="position:relative;overflow:hidden">
-  <div style="position:relative;z-index:1">
-    <div style="font-size:13px;opacity:.8;margin-bottom:6px"> Total Value</div>
-    <div style="font-size:36px;font-weight:800;letter-spacing:-1px">${{ stats.total_earned|floatformat:2 }}</div>
-    <div style="font-size:12px;opacity:.7;margin-top:6px">
-      <span style="background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px">
-        {{ stats.approved }} approved letters &middot; $25.00 each
+<div class="hero-card mb-3" style="position: relative; overflow: hidden">
+  <div style="position: relative; z-index: 1">
+    <div style="font-size: 13px; opacity: 0.8; margin-bottom: 6px">
+      Total Value
+    </div>
+    <div style="font-size: 36px; font-weight: 800; letter-spacing: -1px">
+      ${{ stats.total_earned|floatformat:2 }}
+    </div>
+    <div style="font-size: 12px; opacity: 0.7; margin-top: 6px">
+      <span
+        style="
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 20px;
+          padding: 3px 10px;
+        "
+      >
+        {{ stats.approved }} approved letters &middot; $99.50 each
       </span>
     </div>
     <div class="mt-3 d-flex gap-2 flex-wrap">
-      <a href="{% url 'letters:write' %}" style="background:#fff;color:#1e3a8a;border-radius:20px;padding:7px 18px;font-size:12px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
+      <a
+        href="{% url 'letters:write' %}"
+        style="
+          background: #fff;
+          color: #1e3a8a;
+          border-radius: 20px;
+          padding: 7px 18px;
+          font-size: 12px;
+          font-weight: 700;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        "
+      >
         <i class="bi bi-plus-lg"></i> Write Letter
       </a>
-      <a href="{% url 'payments:withdrawal' %}" style="background:rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:7px 18px;font-size:12px;font-weight:700;text-decoration:none;border:1px solid rgba(255,255,255,.3)">
+      <a
+        href="{% url 'payments:withdrawal' %}"
+        style="
+          background: rgba(255, 255, 255, 0.15);
+          color: #fff;
+          border-radius: 20px;
+          padding: 7px 18px;
+          font-size: 12px;
+          font-weight: 700;
+          text-decoration: none;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        "
+      >
         Withdraw Funds
       </a>
     </div>
   </div>
   <!-- Decorative circles -->
-  <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:rgba(255,255,255,.05);border-radius:50%"></div>
-  <div style="position:absolute;bottom:-60px;right:60px;width:120px;height:120px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+  <div
+    style="
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    "
+  ></div>
+  <div
+    style="
+      position: absolute;
+      bottom: -60px;
+      right: 60px;
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 50%;
+    "
+  ></div>
 </div>
 
 <!-- Summary + Quick Stats Row -->
@@ -87,47 +181,92 @@
         <a href="{% url 'letters:list' %}">View All →</a>
       </div>
       {% if recent_letters %}
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Earnings</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for letter in recent_letters %}
-            <tr>
-              <td>
-                <a href="{% url 'letters:detail' letter.pk %}" style="font-weight:700;color:var(--brand);text-decoration:none;font-size:12px">
-                  {{ letter.letter_id }}
-                </a>
-              </td>
-              <td>
-                <a href="{% url 'letters:detail' letter.pk %}" style="color:var(--text);text-decoration:none;font-weight:500;display:block;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                  {{ letter.title }}
-                </a>
-                <span style="font-size:10px;color:var(--muted)">{{ letter.get_category_display }}</span>
-              </td>
-              <td><span class="pill pill-{{ letter.status }}">{{ letter.get_status_display }}</span></td>
-              <td style="font-weight:700;color:{% if letter.status == 'approved' %}var(--green){% else %}var(--muted){% endif %}">
-                {% if letter.status == 'approved' %}+${{ letter.earnings|floatformat:2 }}{% else %}–{% endif %}
-              </td>
-              <td style="color:var(--muted);font-size:12px">{{ letter.submitted_at|date:"M j" }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Earnings</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for letter in recent_letters %}
+          <tr>
+            <td>
+              <a
+                href="{% url 'letters:detail' letter.pk %}"
+                style="
+                  font-weight: 700;
+                  color: var(--brand);
+                  text-decoration: none;
+                  font-size: 12px;
+                "
+              >
+                {{ letter.letter_id }}
+              </a>
+            </td>
+            <td>
+              <a
+                href="{% url 'letters:detail' letter.pk %}"
+                style="
+                  color: var(--text);
+                  text-decoration: none;
+                  font-weight: 500;
+                  display: block;
+                  max-width: 180px;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                "
+              >
+                {{ letter.title }}
+              </a>
+              <span style="font-size: 10px; color: var(--muted)"
+                >{{ letter.get_category_display }}</span
+              >
+            </td>
+            <td>
+              <span class="pill pill-{{ letter.status }}"
+                >{{ letter.get_status_display }}</span
+              >
+            </td>
+            <td
+              style="font-weight:700;color:{% if letter.status == 'approved' %}var(--green){% else %}var(--muted){% endif %}"
+            >
+              {% if letter.status == 'approved' %}+${{
+              letter.earnings|floatformat:2 }}{% else %}–{% endif %}
+            </td>
+            <td style="color: var(--muted); font-size: 12px">
+              {{ letter.submitted_at|date:"M j" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
       {% else %}
-        <div class="text-center py-5">
-          <i class="bi bi-file-earmark-text" style="font-size:36px;color:#d1d5db;display:block;margin-bottom:12px"></i>
-          <p style="color:var(--muted);font-size:13px;margin-bottom:16px">No letters yet. Write your first!</p>
-          <a href="{% url 'letters:write' %}" class="btn-primary-brand" style="text-decoration:none">
-            <i class="bi bi-pencil-square"></i> Write a Letter
-          </a>
-        </div>
+      <div class="text-center py-5">
+        <i
+          class="bi bi-file-earmark-text"
+          style="
+            font-size: 36px;
+            color: #d1d5db;
+            display: block;
+            margin-bottom: 12px;
+          "
+        ></i>
+        <p style="color: var(--muted); font-size: 13px; margin-bottom: 16px">
+          No letters yet. Write your first!
+        </p>
+        <a
+          href="{% url 'letters:write' %}"
+          class="btn-primary-brand"
+          style="text-decoration: none"
+        >
+          <i class="bi bi-pencil-square"></i> Write a Letter
+        </a>
+      </div>
       {% endif %}
     </div>
   </div>
@@ -136,26 +275,50 @@
     <!-- Stats summary -->
     <div class="panel mb-3">
       <div class="panel-head"><h6>Letter Summary</h6></div>
-      <div style="padding:16px 20px">
-        <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid #f3f4f6">
-          <span style="font-size:13px;color:var(--muted)">Total Submitted</span>
-          <span style="font-weight:700">{{ stats.total }}</span>
+      <div style="padding: 16px 20px">
+        <div
+          class="d-flex justify-content-between align-items-center py-2"
+          style="border-bottom: 1px solid #f3f4f6"
+        >
+          <span style="font-size: 13px; color: var(--muted)"
+            >Total Submitted</span
+          >
+          <span style="font-weight: 700">{{ stats.total }}</span>
         </div>
-        <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid #f3f4f6">
-          <span style="font-size:13px;color:var(--muted)">Pending</span>
-          <span style="font-weight:700;color:var(--amber)">{{ stats.pending }}</span>
+        <div
+          class="d-flex justify-content-between align-items-center py-2"
+          style="border-bottom: 1px solid #f3f4f6"
+        >
+          <span style="font-size: 13px; color: var(--muted)">Pending</span>
+          <span style="font-weight: 700; color: var(--amber)"
+            >{{ stats.pending }}</span
+          >
         </div>
-        <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid #f3f4f6">
-          <span style="font-size:13px;color:var(--muted)">Approved</span>
-          <span style="font-weight:700;color:var(--green)">{{ stats.approved }}</span>
+        <div
+          class="d-flex justify-content-between align-items-center py-2"
+          style="border-bottom: 1px solid #f3f4f6"
+        >
+          <span style="font-size: 13px; color: var(--muted)">Approved</span>
+          <span style="font-weight: 700; color: var(--green)"
+            >{{ stats.approved }}</span
+          >
         </div>
-        <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid #f3f4f6">
-          <span style="font-size:13px;color:var(--muted)">Declined</span>
-          <span style="font-weight:700;color:var(--brand)">{{ stats.declined }}</span>
+        <div
+          class="d-flex justify-content-between align-items-center py-2"
+          style="border-bottom: 1px solid #f3f4f6"
+        >
+          <span style="font-size: 13px; color: var(--muted)">Declined</span>
+          <span style="font-weight: 700; color: var(--brand)"
+            >{{ stats.declined }}</span
+          >
         </div>
         <div class="d-flex justify-content-between align-items-center py-2">
-          <span style="font-size:13px;color:var(--muted)">Pending Payout</span>
-          <span style="font-weight:700;color:var(--amber)">${{ stats.pending_payout|floatformat:2 }}</span>
+          <span style="font-size: 13px; color: var(--muted)"
+            >Pending Payout</span
+          >
+          <span style="font-weight: 700; color: var(--amber)"
+            >${{ stats.pending_payout|floatformat:2 }}</span
+          >
         </div>
       </div>
     </div>
@@ -163,22 +326,205 @@
     <!-- Quick actions grid -->
     <div class="panel">
       <div class="panel-head"><h6>Quick Actions</h6></div>
-      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <a href="{% url 'letters:write' %}" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1.5px solid var(--border);border-radius:12px;transition:all .15s" onmouseover="this.style.borderColor='var(--brand)';this.style.background='var(--brand-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
-          <div style="width:38px;height:38px;border-radius:10px;background:#fee2e2;display:flex;align-items:center;justify-content:center"><i class="bi bi-pencil-square" style="color:var(--brand);font-size:18px"></i></div>
-          <span style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Write Letter</span>
+      <div
+        style="
+          padding: 14px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        "
+      >
+        <a
+          href="{% url 'letters:write' %}"
+          style="
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.15s;
+          "
+          onmouseover="
+            this.style.borderColor = 'var(--brand)';
+            this.style.background = 'var(--brand-light)';
+          "
+          onmouseout="
+            this.style.borderColor = 'var(--border)';
+            this.style.background = '';
+          "
+        >
+          <div
+            style="
+              width: 38px;
+              height: 38px;
+              border-radius: 10px;
+              background: #fee2e2;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <i
+              class="bi bi-pencil-square"
+              style="color: var(--brand); font-size: 18px"
+            ></i>
+          </div>
+          <span
+            style="
+              font-size: 11px;
+              font-weight: 600;
+              color: var(--text);
+              text-align: center;
+            "
+            >Write Letter</span
+          >
         </a>
-        <a href="{% url 'payments:deposit' %}" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1.5px solid var(--border);border-radius:12px;transition:all .15s" onmouseover="this.style.borderColor='var(--green)';this.style.background='var(--green-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
-          <div style="width:38px;height:38px;border-radius:10px;background:#dcfce7;display:flex;align-items:center;justify-content:center"><i class="bi bi-arrow-down-circle" style="color:var(--green);font-size:18px"></i></div>
-          <span style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Deposit</span>
+        <a
+          href="{% url 'payments:deposit' %}"
+          style="
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.15s;
+          "
+          onmouseover="
+            this.style.borderColor = 'var(--green)';
+            this.style.background = 'var(--green-light)';
+          "
+          onmouseout="
+            this.style.borderColor = 'var(--border)';
+            this.style.background = '';
+          "
+        >
+          <div
+            style="
+              width: 38px;
+              height: 38px;
+              border-radius: 10px;
+              background: #dcfce7;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <i
+              class="bi bi-arrow-down-circle"
+              style="color: var(--green); font-size: 18px"
+            ></i>
+          </div>
+          <span
+            style="
+              font-size: 11px;
+              font-weight: 600;
+              color: var(--text);
+              text-align: center;
+            "
+            >Deposit</span
+          >
         </a>
-        <a href="{% url 'payments:withdrawal' %}" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1.5px solid var(--border);border-radius:12px;transition:all .15s" onmouseover="this.style.borderColor='var(--blue)';this.style.background='var(--blue-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
-          <div style="width:38px;height:38px;border-radius:10px;background:#dbeafe;display:flex;align-items:center;justify-content:center"><i class="bi bi-arrow-up-circle" style="color:var(--blue);font-size:18px"></i></div>
-          <span style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Withdraw</span>
+        <a
+          href="{% url 'payments:withdrawal' %}"
+          style="
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.15s;
+          "
+          onmouseover="
+            this.style.borderColor = 'var(--blue)';
+            this.style.background = 'var(--blue-light)';
+          "
+          onmouseout="
+            this.style.borderColor = 'var(--border)';
+            this.style.background = '';
+          "
+        >
+          <div
+            style="
+              width: 38px;
+              height: 38px;
+              border-radius: 10px;
+              background: #dbeafe;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <i
+              class="bi bi-arrow-up-circle"
+              style="color: var(--blue); font-size: 18px"
+            ></i>
+          </div>
+          <span
+            style="
+              font-size: 11px;
+              font-weight: 600;
+              color: var(--text);
+              text-align: center;
+            "
+            >Withdraw</span
+          >
         </a>
-        <a href="{% url 'accounts:profile' %}" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1.5px solid var(--border);border-radius:12px;transition:all .15s" onmouseover="this.style.borderColor='#a855f7';this.style.background='#faf5ff'" onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
-          <div style="width:38px;height:38px;border-radius:10px;background:#f3e8ff;display:flex;align-items:center;justify-content:center"><i class="bi bi-person-circle" style="color:#a855f7;font-size:18px"></i></div>
-          <span style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Profile</span>
+        <a
+          href="{% url 'accounts:profile' %}"
+          style="
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.15s;
+          "
+          onmouseover="
+            this.style.borderColor = '#a855f7';
+            this.style.background = '#faf5ff';
+          "
+          onmouseout="
+            this.style.borderColor = 'var(--border)';
+            this.style.background = '';
+          "
+        >
+          <div
+            style="
+              width: 38px;
+              height: 38px;
+              border-radius: 10px;
+              background: #f3e8ff;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <i
+              class="bi bi-person-circle"
+              style="color: #a855f7; font-size: 18px"
+            ></i>
+          </div>
+          <span
+            style="
+              font-size: 11px;
+              font-weight: 600;
+              color: var(--text);
+              text-align: center;
+            "
+            >Profile</span
+          >
         </a>
       </div>
     </div>
