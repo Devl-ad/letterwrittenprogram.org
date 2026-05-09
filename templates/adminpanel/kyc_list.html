@@ -6,8 +6,11 @@
 <!--  -->
 {% block page_title %}KYC Verifications{% endblock %}
 <!--  -->
-{% block page_sub %}Review submitted identity documents{% endblock %} {% block
-content %}
+{% block page_sub %}Review submitted identity documents{% endblock %}
+
+<!--  -->
+
+{% block content %}
 <div class="adm-tabs">
   <a href="?status=" class="adm-tab {% if not status %}active{% endif %}"
     >All ({{ counts.all }})</a
