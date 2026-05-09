@@ -1,0 +1,153 @@
+{% extends "adminpanel/base.html" %}
+<!--  -->
+{% load humanize %}
+<!--  -->
+{% block title %}KYC Verifications{% endblock %}
+<!--  -->
+{% block page_title %}KYC Verifications{% endblock %}
+<!--  -->
+{% block page_sub %}Review submitted identity documents{% endblock %} {% block
+content %}
+<div class="adm-tabs">
+  <a href="?status=" class="adm-tab {% if not status %}active{% endif %}"
+    >All ({{ counts.all }})</a
+  >
+  <a
+    href="?status=processing"
+    class="adm-tab {% if status == 'processing' %}active{% endif %}"
+    >Pending ({{ counts.processing }})</a
+  >
+  <a
+    href="?status=approved"
+    class="adm-tab {% if status == 'approved' %}active{% endif %}"
+    >Approved ({{ counts.approved }})</a
+  >
+  <a
+    href="?status=declined"
+    class="adm-tab {% if status == 'declined' %}active{% endif %}"
+    >Declined ({{ counts.declined }})</a
+  >
+</div>
+
+<div class="adm-panel">
+  {% if kycs %}
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Submitted</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for k in kycs %}
+      <tr
+        onclick="window.location='{% url 'adminpanel:kyc_detail' k.pk %}'"
+        style="cursor: pointer"
+      >
+        <td>
+          <div class="d-flex align-items-center gap-3">
+            <div
+              style="
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--brand), #ff6b80);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: 700;
+                color: #fff;
+                flex-shrink: 0;
+              "
+            >
+              {{ k.user.initials }}
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 13px">
+                {{ k.user.get_full_name|default:k.user.username }}
+              </div>
+              <div style="font-size: 11px; color: var(--muted)">
+                @{{ k.user.username }}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td style="font-size: 12px; color: var(--muted)">{{ k.user.email }}</td>
+        <td>
+          <span
+            class="pill pill-{% if k.status == 'processing' %}pending{% else %}{{ k.status }}{% endif %}"
+          >
+            {{ k.get_status_display }}
+          </span>
+        </td>
+        <td style="font-size: 12px; color: var(--muted)">
+          {{ k.user.date_joined|date:"M j, Y" }}
+        </td>
+        <td onclick="event.stopPropagation()">
+          <a
+            href="{% url 'adminpanel:kyc_detail' k.pk %}"
+            class="btn-adm btn-adm-outline"
+            style="padding: 5px 12px; font-size: 11px"
+          >
+            Review
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if kycs.has_other_pages %}
+  <div
+    class="d-flex justify-content-center gap-2 py-3"
+    style="border-top: 1px solid var(--border)"
+  >
+    {% if kycs.has_previous %}
+    <a
+      href="?status={{ status }}&page={{ kycs.previous_page_number }}"
+      class="btn-adm btn-adm-outline"
+      style="padding: 6px 14px; font-size: 12px"
+      >← Prev</a
+    >
+    {% endif %}
+    <span
+      style="
+        padding: 6px 16px;
+        background: var(--brand);
+        color: #fff;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+      "
+    >
+      {{ kycs.number }} / {{ kycs.paginator.num_pages }}
+    </span>
+    {% if kycs.has_next %}
+    <a
+      href="?status={{ status }}&page={{ kycs.next_page_number }}"
+      class="btn-adm btn-adm-outline"
+      style="padding: 6px 14px; font-size: 12px"
+      >Next →</a
+    >
+    {% endif %}
+  </div>
+  {% endif %} {% else %}
+  <div class="text-center py-5" style="color: var(--muted)">
+    <i
+      class="bi bi-patch-check"
+      style="
+        font-size: 36px;
+        display: block;
+        margin-bottom: 10px;
+        color: #d1d5db;
+      "
+    ></i>
+    No KYC submissions found.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

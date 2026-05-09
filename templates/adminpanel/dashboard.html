@@ -83,8 +83,12 @@
         {{ stats.approved_letters }}
       </div>
       <div class="adm-stat-sub">
-        {% if stats.total_letters %}{% widthratio stats.approved_letters
-        stats.total_letters 100 %}% approval rate{% endif %}
+        {% if stats.total_letters %}
+        <!--  -->
+        {% widthratio stats.approved_letters stats.total_letters 100 %}%
+        <!--  -->
+
+        approval rate{% endif %}
       </div>
     </div>
   </div>

@@ -11,6 +11,7 @@ from apps.accounts.models import User
 from apps.letters.models import Letter
 from apps.payments.models import Deposit, Withdrawal
 from decimal import Decimal
+from apps.accounts.models import Kyc
 
 is_admin = user_passes_test(lambda u: u.is_staff, login_url="login")
 
@@ -32,7 +33,7 @@ def _send_letter_email(letter, status, note=""):
             f"has been approved and ${letter.earnings:.2f} has been credited to your balance.\n\n"
             f"{'Admin note: ' + note + chr(10) + chr(10) if note else ''}"
             f"Log in to view your balance and request a withdrawal.\n\n"
-            f"— Smart Writing Finance Team"
+            f"— Letter Writing Program Team"
         ),
         "declined": (
             f"Hi {letter.user.first_name or letter.user.username},\n\n"
@@ -40,7 +41,7 @@ def _send_letter_email(letter, status, note=""):
             f"was not approved at this time.\n\n"
             f"{'Reason: ' + note + chr(10) + chr(10) if note else ''}"
             f"You're welcome to submit a revised version.\n\n"
-            f"— Smart Writing Finance Team"
+            f"— Letter Writing Program Team"
         ),
     }
     try:
@@ -230,7 +231,7 @@ def admin_user_detail(request, pk):
                 subject,
                 body,
                 getattr(
-                    settings, "DEFAULT_FROM_EMAIL", "noreply@smartwritingfinance.com"
+                    settings, "DEFAULT_FROM_EMAIL", "info@letterwrittenprogram.org"
                 ),
                 [u.email],
                 fail_silently=True,
@@ -275,9 +276,9 @@ def admin_deposits(request):
                 f"💰 Deposit of ${dep.amount_usd} Confirmed",
                 f"Hi {dep.user.first_name or dep.user.username},\n\n"
                 f"Your {dep.method} deposit of ${dep.amount_usd} has been confirmed and credited to your balance.\n\n"
-                f"— Smart Writing Finance Team",
+                f"— Letter Writing Program Team",
                 getattr(
-                    settings, "DEFAULT_FROM_EMAIL", "noreply@smartwritingfinance.com"
+                    settings, "DEFAULT_FROM_EMAIL", "info@letterwrittenprogram.org"
                 ),
                 [dep.user.email],
                 fail_silently=True,
@@ -328,9 +329,9 @@ def admin_withdrawals(request):
                 f"✅ Withdrawal of ${w.amount} Completed",
                 f"Hi {w.user.first_name or w.user.username},\n\n"
                 f"Your withdrawal of ${w.amount} to {w.bank_name} has been processed successfully.\n\n"
-                f"— Smart Writing Finance Team",
+                f"— Letter Writing Program Team",
                 getattr(
-                    settings, "DEFAULT_FROM_EMAIL", "noreply@smartwritingfinance.com"
+                    settings, "DEFAULT_FROM_EMAIL", "info@letterwrittenprogram.org"
                 ),
                 [w.user.email],
                 fail_silently=True,
@@ -347,9 +348,9 @@ def admin_withdrawals(request):
                 f"Hi {w.user.first_name or w.user.username},\n\n"
                 f"Your withdrawal request of ${w.amount} has been rejected. "
                 f"The amount has been refunded to your balance.\n\n"
-                f"— Smart Writing Finance Team",
+                f"— Letter Writing Program Team",
                 getattr(
-                    settings, "DEFAULT_FROM_EMAIL", "noreply@smartwritingfinance.com"
+                    settings, "DEFAULT_FROM_EMAIL", "info@letterwrittenprogram.org"
                 ),
                 [w.user.email],
                 fail_silently=True,
@@ -381,3 +382,96 @@ def admin_withdrawals(request):
             "counts": counts,
         },
     )
+
+
+# ── KYC ──────────────────────────────────────────────────
+@admin_required
+def admin_kyc_list(request):
+
+    status = request.GET.get("status", "")
+    qs = Kyc.objects.select_related("user").order_by("-id")
+    if status:
+        qs = qs.filter(status=status)
+
+    counts = {
+        "all": Kyc.objects.count(),
+        "processing": Kyc.objects.filter(status="processing").count(),
+        "approved": Kyc.objects.filter(status="approved").count(),
+        "declined": Kyc.objects.filter(status="declined").count(),
+    }
+
+    paginator = Paginator(qs, 15)
+    kycs = paginator.get_page(request.GET.get("page", 1))
+    return render(
+        request,
+        "adminpanel/kyc_list.html",
+        {
+            "kycs": kycs,
+            "status": status,
+            "counts": counts,
+        },
+    )
+
+
+@admin_required
+def admin_kyc_detail(request, pk):
+
+    kyc = get_object_or_404(Kyc, pk=pk)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        note = request.POST.get("note", "").strip()
+
+        if action == "approve":
+            kyc.status = "approved"
+            kyc.is_approved = True
+            kyc.user.is_kyc_verified = True
+            kyc.user.save()
+            kyc.save()
+            send_mail(
+                "✅ KYC Verification Approved",
+                f"Hi {kyc.user.first_name or kyc.user.username},\n\n"
+                f"Your identity verification (KYC) has been approved. "
+                f"You can now make withdrawals from your account.\n\n"
+                f"{'Note: ' + note + chr(10) + chr(10) if note else ''}"
+                f"— Letter Writing Program Team",
+                getattr(
+                    settings, "DEFAULT_FROM_EMAIL", "info@letterwrittenprogram.org"
+                ),
+                [kyc.user.email],
+                fail_silently=True,
+            )
+            messages.success(
+                request, f"KYC approved for {kyc.user.username}. Email sent."
+            )
+
+        elif action == "decline":
+            kyc.status = "declined"
+            kyc.is_approved = False
+            kyc.save()
+            send_mail(
+                "❌ KYC Verification Declined",
+                f"Hi {kyc.user.first_name or kyc.user.username},\n\n"
+                f"Unfortunately your identity verification was not approved.\n\n"
+                f"{'Reason: ' + note + chr(10) + chr(10) if note else ''}"
+                f"Please resubmit with clearer documents.\n\n"
+                f"— Letter Writing Program Team",
+                getattr(
+                    settings, "DEFAULT_FROM_EMAIL", "info@letterwrittenprogram.org"
+                ),
+                [kyc.user.email],
+                fail_silently=True,
+            )
+            messages.warning(
+                request, f"KYC declined for {kyc.user.username}. Email sent."
+            )
+
+        elif action == "reset":
+            kyc.status = "processing"
+            kyc.is_approved = False
+            kyc.save()
+            messages.info(request, "KYC reset to processing.")
+
+        return redirect("adminpanel:kyc_detail", pk=pk)
+
+    return render(request, "adminpanel/kyc_detail.html", {"kyc": kyc})

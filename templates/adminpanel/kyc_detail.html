@@ -1,0 +1,307 @@
+{% extends "adminpanel/base.html" %}
+<!--  -->
+{% load humanize %}
+<!--  -->
+{% block title %}KYC — {{ kyc.user.username }}{% endblock %}
+<!--  -->
+{% block page_title %}
+<!--  -->
+KYC Review — {{ kyc.user.get_full_name|default:kyc.user.username }}
+<!--  -->
+{% endblock %}
+<!--  -->
+{% block page_sub %}Identity verification submission{% endblock %}
+<!--  -->
+{% block content %}
+<div class="mb-3">
+  <a
+    href="{% url 'adminpanel:kyc_list' %}"
+    style="
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+    "
+  >
+    <i class="bi bi-arrow-left me-1"></i> Back to KYC List
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Documents -->
+  <div class="col-lg-8">
+    <div class="adm-panel mb-3">
+      <div class="adm-panel-head">
+        <h6><i class="bi bi-card-image me-2"></i>Submitted Documents</h6>
+        <span
+          class="pill pill-{% if kyc.status == 'processing' %}pending{% else %}{{ kyc.status }}{% endif %}"
+        >
+          {{ kyc.get_status_display }}
+        </span>
+      </div>
+      <div class="row g-0">
+        <div
+          class="col-md-6"
+          style="padding: 20px; border-right: 1px solid var(--border)"
+        >
+          <div
+            style="
+              font-size: 11px;
+              font-weight: 700;
+              color: var(--muted);
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin-bottom: 12px;
+            "
+          >
+            <i class="bi bi-front me-1"></i> Document Front
+          </div>
+          <a href="{{ kyc.document_front.url }}" target="_blank">
+            <img
+              src="{{ kyc.document_front.url }}"
+              alt="Document Front"
+              style="
+                width: 100%;
+                border-radius: 10px;
+                border: 1px solid var(--border);
+                object-fit: cover;
+                max-height: 280px;
+                cursor: zoom-in;
+              "
+            />
+          </a>
+          <div
+            style="
+              font-size: 11px;
+              color: var(--muted);
+              margin-top: 8px;
+              text-align: center;
+            "
+          >
+            Click image to open full size
+          </div>
+        </div>
+        <div class="col-md-6" style="padding: 20px">
+          <div
+            style="
+              font-size: 11px;
+              font-weight: 700;
+              color: var(--muted);
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin-bottom: 12px;
+            "
+          >
+            <i class="bi bi-back me-1"></i> Document Back
+          </div>
+          <a href="{{ kyc.document_back.url }}" target="_blank">
+            <img
+              src="{{ kyc.document_back.url }}"
+              alt="Document Back"
+              style="
+                width: 100%;
+                border-radius: 10px;
+                border: 1px solid var(--border);
+                object-fit: cover;
+                max-height: 280px;
+                cursor: zoom-in;
+              "
+            />
+          </a>
+          <div
+            style="
+              font-size: 11px;
+              color: var(--muted);
+              margin-top: 8px;
+              text-align: center;
+            "
+          >
+            Click image to open full size
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="col-lg-4">
+    <!-- User info -->
+    <div class="adm-panel mb-3">
+      <div class="adm-panel-head"><h6>Submitted By</h6></div>
+      <div style="padding: 18px 20px">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div
+            style="
+              width: 44px;
+              height: 44px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, var(--brand), #ff6b80);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 16px;
+              font-weight: 700;
+              color: #fff;
+              flex-shrink: 0;
+            "
+          >
+            {{ kyc.user.initials }}
+          </div>
+          <div>
+            <a
+              href="{% url 'adminpanel:user_detail' kyc.user.pk %}"
+              style="
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--text);
+                text-decoration: none;
+              "
+            >
+              {{ kyc.user.get_full_name|default:kyc.user.username }}
+            </a>
+            <div style="font-size: 12px; color: var(--muted)">
+              {{ kyc.user.email }}
+            </div>
+          </div>
+        </div>
+        <div style="font-size: 12px">
+          <div
+            class="d-flex justify-content-between py-2"
+            style="border-top: 1px solid #f3f4f6"
+          >
+            <span style="color: var(--muted)">Username</span>
+            <strong>{{ kyc.user.username }}</strong>
+          </div>
+          <div
+            class="d-flex justify-content-between py-2"
+            style="border-top: 1px solid #f3f4f6"
+          >
+            <span style="color: var(--muted)">Balance</span>
+            <strong style="color: var(--green)"
+              >${{ kyc.user.balance|floatformat:2 }}</strong
+            >
+          </div>
+          <div
+            class="d-flex justify-content-between py-2"
+            style="border-top: 1px solid #f3f4f6"
+          >
+            <span style="color: var(--muted)">KYC Status</span>
+            <span
+              class="pill pill-{% if kyc.status == 'processing' %}pending{% else %}{{ kyc.status }}{% endif %}"
+            >
+              {{ kyc.get_status_display }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review actions -->
+    {% if kyc.status == 'processing' %}
+    <div class="adm-panel" style="border-top: 3px solid var(--amber)">
+      <div class="adm-panel-head">
+        <h6>
+          <i class="bi bi-shield-check me-2" style="color: var(--amber)"></i
+          >Review Decision
+        </h6>
+      </div>
+      <div style="padding: 20px">
+        <label class="adm-label" style="margin-bottom: 6px">
+          Note
+          <span style="color: var(--muted); font-weight: 400"
+            >(emailed to user)</span
+          >
+        </label>
+        <textarea
+          id="shared-note"
+          class="adm-form-control"
+          rows="3"
+          placeholder="Optional reason for approval or decline…"
+          style="margin-bottom: 16px; resize: vertical"
+        ></textarea>
+
+        <div class="d-flex flex-column gap-2">
+          <form method="post" onsubmit="syncNote(this)">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="approve" />
+            <input type="hidden" name="note" class="note-field" />
+            <button
+              type="submit"
+              class="btn-adm btn-adm-success w-100"
+              onclick="return confirm('Approve KYC for {{ kyc.user.username }}?')"
+            >
+              <i class="bi bi-patch-check-fill"></i> Approve KYC
+            </button>
+          </form>
+          <form method="post" onsubmit="syncNote(this)">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="decline" />
+            <input type="hidden" name="note" class="note-field" />
+            <button
+              type="submit"
+              class="btn-adm btn-adm-danger w-100"
+              onclick="return confirm('Decline KYC for {{ kyc.user.username }}?')"
+            >
+              <i class="bi bi-x-circle-fill"></i> Decline KYC
+            </button>
+          </form>
+        </div>
+
+        <div
+          style="
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: #fffbeb;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #854d0e;
+          "
+        >
+          <i class="bi bi-envelope me-1"></i> Email will be sent to
+          <strong>{{ kyc.user.email }}</strong>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <!-- Already reviewed -->
+    <div
+      class="adm-panel"
+      style="border-top:3px solid {% if kyc.status == 'approved' %}var(--green){% else %}var(--brand){% endif %}"
+    >
+      <div class="adm-panel-head"><h6>Review Result</h6></div>
+      <div style="padding: 20px; text-align: center">
+        <div style="font-size: 40px; margin-bottom: 8px">
+          {% if kyc.status == 'approved' %}✅{% else %}❌{% endif %}
+        </div>
+        <div
+          style="font-size:15px;font-weight:700;color:{% if kyc.status == 'approved' %}var(--green){% else %}var(--brand){% endif %}"
+        >
+          {{ kyc.get_status_display }}
+        </div>
+        <div style="margin-top: 16px">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reset" />
+            <button
+              type="submit"
+              class="btn-adm btn-adm-outline w-100"
+              onclick="return confirm('Reset this KYC back to processing?');"
+            >
+              <i class="bi bi-arrow-counterclockwise"></i> Reset to Pending
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  function syncNote(form) {
+    form.querySelector(".note-field").value =
+      document.getElementById("shared-note").value;
+  }
+</script>
+{% endblock %}
