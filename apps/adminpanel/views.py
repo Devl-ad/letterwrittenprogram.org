@@ -472,6 +472,6 @@ def admin_kyc_detail(request, pk):
             kyc.save()
             messages.info(request, "KYC reset to processing.")
 
-        return redirect("adminpanel:kyc_detail", pk=pk)
+        return redirect("adminpanel:kyc_details", pk=pk)
 
     return render(request, "adminpanel/kyc_detail.html", {"kyc": kyc})
