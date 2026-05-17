@@ -113,12 +113,12 @@ class KycForm(forms.ModelForm):
 
     def clean_document_front(self):
         file = self.cleaned_data.get("document_front")
-        if file and file.size > 5 * 1024 * 1024:
-            raise forms.ValidationError("Front document must be under 5MB.")
+        if file and file.size > 10 * 1024 * 1024:
+            raise forms.ValidationError("Front document must be under 10MB.")
         return file
 
     def clean_document_back(self):
         file = self.cleaned_data.get("document_back")
-        if file and file.size > 5 * 1024 * 1024:
-            raise forms.ValidationError("Back document must be under 5MB.")
+        if file and file.size > 10 * 1024 * 1024:
+            raise forms.ValidationError("Back document must be under 10MB.")
         return file
