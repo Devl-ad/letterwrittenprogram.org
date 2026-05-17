@@ -12,5 +12,5 @@ urlpatterns = [
     path("deposits/", views.admin_deposits, name="deposits"),
     path("withdrawals/", views.admin_withdrawals, name="withdrawals"),
     path("kyc/", views.admin_kyc_list, name="kyc_list"),
-    path("kyc/<id>/", views.admin_kyc_detail, name="kyc_details"),
+    path("kyc/<pk>/", views.admin_kyc_detail, name="kyc_details"),
 ]
